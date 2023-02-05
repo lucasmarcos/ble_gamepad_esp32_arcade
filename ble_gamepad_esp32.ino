@@ -1,32 +1,41 @@
-#include <Arduino.h>
 #include <BleGamepad.h>
 
 BleGamepad bleGamepad;
 
 #define npins 10
 
-char pins[npins] = { 4, 13, 14, 16, 17, 18, 19, 21, 22, 23 };
+char pins[npins] =   { 14, 17, 18, 21, 22, 26, 32, 33, 19, 16 };
+char btnmap[npins] = {  5,  4,  6,  1,  10,  2,  9,  3,  7,  8 };
 char states[npins] = { 0 };
+
+// floating 23
+
+// 22 32
+// 33 17 14 18
+// 21 26 19 16
+
+//    27
+// 13    4
+//    25
 
 void setup()
 {
-  int i;
+  BleGamepadConfiguration bleGamepadConfig;
+  // bleGamepadConfig.setButtonCount(10);
+  // bleGamepadConfig.setHatSwitchCount(1);
+  // bleGamepadConfig.setWhichAxes(false, false, false, false, false, false, false, false);
 
-  bleGamepad.begin();
+  bleGamepad.begin(&bleGamepadConfig);
 
-  for (i = 0; i < npins; i++) {
-    pinMode(pins[i], INPUT_PULLUP);
-  }
+  for (int i = 0; i < npins; i++) pinMode(pins[i], INPUT_PULLUP);
 
-  /*
-  pinMode(25, INPUT_PULLUP); // up
-  pinMode(26, INPUT_PULLUP); // down
-  pinMode(27, INPUT_PULLUP); // left
-  pinMode(32, INPUT_PULLUP); // right
-  */
-
-  // pinMode(33, INPUT_PULLUP);
+  pinMode(13, INPUT_PULLUP); // left
+  pinMode(27, INPUT_PULLUP); // up
+  pinMode(25, INPUT_PULLUP); // down
+  pinMode( 4, INPUT_PULLUP); // right
 }
+
+int dpad = 0;
 
 void loop()
 {
@@ -38,8 +47,40 @@ void loop()
       states[i] = digitalRead(pins[i]);
       if (old != states[i]) {
         changed = 1;
-	states[i] ? bleGamepad.release(i + 1) : bleGamepad.press(i + 1);
+        states[i] ? bleGamepad.release(btnmap[i]) : bleGamepad.press(btnmap[i]);
       }
+    }
+
+    old = dpad;
+    int left = !digitalRead(13);
+    int right = !digitalRead(4); 
+    if (!digitalRead(27)) { // up
+      if (left) {
+        dpad = DPAD_UP_LEFT;
+      } else if (right) {
+        dpad = DPAD_UP_RIGHT;
+      } else {
+        dpad = DPAD_UP;
+      }
+    } else if (!digitalRead(25)) { // down
+      if (left) {
+        dpad = DPAD_DOWN_LEFT;
+      } else if (right) {
+        dpad = DPAD_DOWN_RIGHT;
+      } else {
+        dpad = DPAD_DOWN;
+      }
+    } else if (left) {
+      dpad = DPAD_LEFT;
+    } else if (right) {
+      dpad = DPAD_RIGHT;
+    } else {
+      dpad = DPAD_CENTERED;
+    }
+
+    if (dpad != old) {
+      changed = 1;
+      bleGamepad.setHat(dpad);
     }
 
     if (changed) bleGamepad.sendReport();
