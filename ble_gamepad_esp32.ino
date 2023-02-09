@@ -5,7 +5,7 @@ BleGamepad bleGamepad;
 #define npins 10
 
 char pins[npins] =   { 14, 17, 18, 21, 22, 26, 32, 33, 19, 16 };
-char btnmap[npins] = {  5,  4,  6,  1,  10,  2,  9,  3,  7,  8 };
+char btnmap[npins] = {  6,  4,  5,  1,  10,  2,  9,  3,  8,  7 };
 char states[npins] = { 0 };
 
 // floating 23
